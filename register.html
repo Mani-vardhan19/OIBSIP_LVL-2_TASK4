@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Secure Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <h2>Create Account</h2>
+                <p>Register below to access your secure developer workspace.</p>
+            </div>
+
+            <!-- Global messaging -->
+            <div id="reg-message" class="alert-message hidden"></div>
+
+            <!-- Form -->
+            <form id="register-form" novalidate>
+                <!-- Username Field -->
+                <div class="input-group">
+                    <label for="reg-username">Username or Email</label>
+                    <input type="text" id="reg-username" placeholder="developer@oasis.com" required autocomplete="username">
+                </div>
+
+                <!-- Password Field -->
+                <div class="input-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" required autocomplete="new-password">
+                </div>
+
+                <!-- Live Password requirements tracker -->
+                <div class="requirements-box">
+                    <p class="req-title">Password requirements:</p>
+                    <ul>
+                        <li id="req-length" class="req-item invalid">
+                            <span class="bullet">✖</span> At least 8 characters
+                        </li>
+                        <li id="req-number" class="req-item invalid">
+                            <span class="bullet">✖</span> At least 1 numerical digit (0-9)
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-auth">Register Account</button>
+            </form>
+
+            <!-- Bottom navigation -->
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

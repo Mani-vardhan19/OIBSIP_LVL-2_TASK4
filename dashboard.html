@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Dashboard - Oasis Workspace</title>
+    <!-- Immediate Guard to prevent flash of content -->
+    <script>
+        (function() {
+            const session = sessionStorage.getItem('oasis_auth_session');
+            if (!session) {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-container">
+        <!-- Navigation bar -->
+        <nav class="dashboard-nav">
+            <div class="nav-logo">
+                <span class="logo-shield">🛡️</span>
+                <span>Oasis Portal</span>
+            </div>
+            <div class="nav-user">
+                <span id="session-username" class="user-name">developer@oasis.com</span>
+                <button id="logout-btn" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Dashboard Content -->
+        <main class="dashboard-main">
+            <!-- Welcome Header -->
+            <header class="dashboard-header">
+                <h1>Welcome to Your Secure Workspace</h1>
+                <p>All client-side operations are active. Hashed session keys have been initialized successfully.</p>
+            </header>
+
+            <!-- Cards Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-info">
+                        <h3>Session Status</h3>
+                        <p class="status-active">Active (Client-side)</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="card-icon">🔐</div>
+                    <div class="card-info">
+                        <h3>Security Level</h3>
+                        <p>SHA-256 Encrypted</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="card-icon">📁</div>
+                    <div class="card-info">
+                        <h3>Stored Profiles</h3>
+                        <p id="profile-count">0 Registry Profiles</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Section -->
+            <section class="activity-section">
+                <h2>Security Log Overview</h2>
+                <div class="log-table-wrapper">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Action Event</th>
+                                <th>Security Profile</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="mono-font" id="log-time-1">09:14:00 AM</span></td>
+                                <td>User Authentication session initialized</td>
+                                <td>Client SessionToken</td>
+                                <td><span class="badge-success">Success</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="mono-font" id="log-time-2">09:13:45 AM</span></td>
+                                <td>Password SHA-256 hash verified</td>
+                                <td>SHA-256 Cryptography</td>
+                                <td><span class="badge-success">Verified</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="mono-font" id="log-time-3">09:13:30 AM</span></td>
+                                <td>Registry lookup executed</td>
+                                <td>Local Database store</td>
+                                <td><span class="badge-success">Passed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

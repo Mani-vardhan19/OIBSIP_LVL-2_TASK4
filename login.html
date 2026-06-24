@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Secure Portal</title>
+    <link class="style" rel="stylesheet" href="style.css">
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <h2>Secure Login</h2>
+                <p>Welcome back! Please enter your credentials to login.</p>
+            </div>
+
+            <!-- Global messaging -->
+            <div id="login-message" class="alert-message hidden"></div>
+
+            <!-- Form -->
+            <form id="login-form" novalidate>
+                <!-- Username Field -->
+                <div class="input-group">
+                    <label for="login-username">Username or Email</label>
+                    <input type="text" id="login-username" placeholder="developer@oasis.com" required autocomplete="username">
+                </div>
+
+                <!-- Password Field -->
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-auth">Login Securely</button>
+            </form>
+
+            <!-- Bottom navigation -->
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="register.html">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

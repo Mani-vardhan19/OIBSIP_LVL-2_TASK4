@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Gateway</title>
+    <script>
+        // Redirect gatekeeper
+        const session = sessionStorage.getItem('oasis_auth_session');
+        if (session) {
+            window.location.replace('dashboard.html');
+        } else {
+            window.location.replace('login.html');
+        }
+    </script>
+</head>
+<body style="background-color: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+    <p>Redirecting to gateway...</p>
+</body>
+</html>
