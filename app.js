@@ -3,206 +3,262 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // ==========================================================================
-    // 1. REGISTRATION PAGE CONTROLLER
-    // ==========================================================================
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        const usernameInput = document.getElementById('reg-username');
-        const passwordInput = document.getElementById('reg-password');
-        const reqLength = document.getElementById('req-length');
-        const reqNumber = document.getElementById('req-number');
-        const alertMessage = document.getElementById('reg-message');
 
-        // Real-time password feedback
-        passwordInput.addEventListener('input', () => {
-            const password = passwordInput.value;
-            const strength = evaluatePasswordStrength(password);
+    // =========================================================================
+    // TAB SWITCHER (Login ↔ Sign Up)
+    // =========================================================================
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    const tabIndicator = document.querySelector('.tab-indicator');
 
-            // Length Validation Indicator
-            if (strength.minLengthOk) {
-                reqLength.className = 'req-item valid';
-                reqLength.querySelector('.bullet').textContent = '✔';
-            } else {
-                reqLength.className = 'req-item invalid';
-                reqLength.querySelector('.bullet').textContent = '✖';
-            }
-
-            // Number Validation Indicator
-            if (strength.hasNumberOk) {
-                reqNumber.className = 'req-item valid';
-                reqNumber.querySelector('.bullet').textContent = '✔';
-            } else {
-                reqNumber.className = 'req-item invalid';
-                reqNumber.querySelector('.bullet').textContent = '✖';
-            }
+    function switchTab(targetTab) {
+        tabBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === targetTab);
         });
-
-        // Form Submit Handler
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
-
-            // Clear alert states
-            showAlert(alertMessage, '', 'hidden');
-
-            // 1. Empty field checks
-            if (!username || !password) {
-                showAlert(alertMessage, 'Please fill in all required fields.', 'error');
-                return;
-            }
-
-            // 2. Strength Validation
-            const strength = evaluatePasswordStrength(password);
-            if (!strength.isValid) {
-                showAlert(alertMessage, 'Password does not meet the security requirements.', 'error');
-                return;
-            }
-
-            // 3. Username uniqueness check
-            if (isUsernameTaken(username)) {
-                showAlert(alertMessage, 'This username or email is already registered.', 'error');
-                return;
-            }
-
-            // Disable button during registration process
-            const submitBtn = registerForm.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Registering...';
-
-            try {
-                // 4. Hash password client-side using SHA-256 (via Web Crypto)
-                const hashed = await hashPassword(password);
-                
-                // 5. Store in Registry database mockup
-                registerUser(username, hashed);
-
-                showAlert(alertMessage, 'Registration successful! Redirecting to login...', 'success');
-
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-
-            } catch (err) {
-                showAlert(alertMessage, 'An unexpected error occurred. Please try again.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Register Account';
-            }
+        panels.forEach(panel => {
+            panel.classList.toggle('hidden', panel.id !== `panel-${targetTab}`);
+        });
+        // Slide indicator to the active tab button
+        const activeBtn = document.querySelector(`.tab-btn[data-tab="${targetTab}"]`);
+        if (activeBtn && tabIndicator) {
+            tabIndicator.style.width = activeBtn.offsetWidth + 'px';
+            tabIndicator.style.left  = activeBtn.offsetLeft + 'px';
+        }
+        // Clear messages when switching tabs
+        document.querySelectorAll('.alert-message').forEach(el => {
+            el.className = 'alert-message hidden';
+            el.textContent = '';
         });
     }
 
-    // ==========================================================================
-    // 2. LOGIN PAGE CONTROLLER
-    // ==========================================================================
+    // Attach tab button listeners
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // "Switch" inline links inside panels
+    document.querySelectorAll('.switch-link').forEach(link => {
+        link.addEventListener('click', () => switchTab(link.dataset.targetTab));
+    });
+
+    // Init indicator position on load
+    switchTab('login');
+
+    // =========================================================================
+    // PASSWORD VISIBILITY TOGGLES
+    // =========================================================================
+    document.querySelectorAll('.toggle-pass').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = document.getElementById(btn.dataset.target);
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+            btn.classList.toggle('active');
+        });
+    });
+
+    // =========================================================================
+    // 1. LOGIN FORM CONTROLLER
+    // =========================================================================
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
-        const usernameInput = document.getElementById('login-username');
-        const passwordInput = document.getElementById('login-password');
-        const alertMessage = document.getElementById('login-message');
+        const identifierInput = document.getElementById('login-identifier');
+        const passwordInput   = document.getElementById('login-password');
+        const alertMsg        = document.getElementById('login-message');
+        const submitBtn       = document.getElementById('login-submit-btn');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            showAlert(alertMsg, '', 'hidden');
 
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
+            const identifier = identifierInput.value.trim();
+            const password   = passwordInput.value;
 
-            showAlert(alertMessage, '', 'hidden');
-
-            // 1. Empty field check
-            if (!username || !password) {
-                showAlert(alertMessage, 'Please enter both username and password.', 'error');
+            // Empty field check
+            if (!identifier || !password) {
+                showAlert(alertMsg, 'Please fill in all fields.', 'error');
                 return;
             }
 
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Validating...';
+            submitBtn.textContent = 'Verifying...';
 
             try {
-                // 2. Hash input password to match stored hash
                 const hashedInput = await hashPassword(password);
-                
-                // 3. Authenticate against stored profiles
-                const registry = getUserRegistry();
-                const matchedUser = registry.find(user => 
-                    user.username === username.toLowerCase().trim() && 
-                    user.passwordHash === hashedInput
-                );
+                const matchedUser = findUserByIdentifier(identifier);
 
-                if (matchedUser) {
-                    // Session registration
-                    createSession(matchedUser.username);
+                if (matchedUser && matchedUser.passwordHash === hashedInput) {
+                    createSession(matchedUser);
                     window.location.href = 'dashboard.html';
                 } else {
-                    // CRITICAL: Display a generic message to prevent account enumeration
-                    showAlert(alertMessage, 'Incorrect username or password.', 'error');
+                    // Generic message — do not reveal which field is wrong
+                    showAlert(alertMsg, 'Incorrect email / phone or password.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Login Securely';
                 }
-
             } catch (err) {
-                showAlert(alertMessage, 'An error occurred during authentication.', 'error');
+                showAlert(alertMsg, 'An error occurred. Please try again.', 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login Securely';
             }
         });
     }
 
-    // ==========================================================================
-    // 3. DASHBOARD PAGE CONTROLLER (PROTECTED VIEW)
-    // ==========================================================================
+    // =========================================================================
+    // 2. SIGN UP FORM CONTROLLER
+    // =========================================================================
+    const signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        const nameInput     = document.getElementById('signup-name');
+        const phoneInput    = document.getElementById('signup-phone');
+        const emailInput    = document.getElementById('signup-email');
+        const passwordInput = document.getElementById('signup-password');
+        const confirmInput  = document.getElementById('signup-confirm');
+        const alertMsg      = document.getElementById('signup-message');
+        const submitBtn     = document.getElementById('signup-submit-btn');
+
+        const reqLength = document.getElementById('req-length');
+        const reqNumber = document.getElementById('req-number');
+        const reqMatch  = document.getElementById('req-match');
+
+        // Live password feedback
+        function updateRequirements() {
+            const pass    = passwordInput.value;
+            const confirm = confirmInput.value;
+            const str     = evaluatePasswordStrength(pass);
+
+            setReq(reqLength, str.minLengthOk);
+            setReq(reqNumber, str.hasNumberOk);
+            setReq(reqMatch,  pass !== '' && pass === confirm);
+        }
+
+        passwordInput.addEventListener('input', updateRequirements);
+        confirmInput.addEventListener('input', updateRequirements);
+
+        // Form submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showAlert(alertMsg, '', 'hidden');
+
+            const name     = nameInput.value.trim();
+            const phone    = phoneInput.value.trim();
+            const email    = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirm  = confirmInput.value;
+
+            // ── Validation chain ──────────────────────────────────────────
+            if (!name || !phone || !email || !password || !confirm) {
+                showAlert(alertMsg, 'Please fill in all required fields.', 'error');
+                return;
+            }
+
+            if (!isValidPhone(phone)) {
+                showAlert(alertMsg, 'Enter a valid phone number (digits only, 7–15 chars).', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showAlert(alertMsg, 'Enter a valid email address.', 'error');
+                return;
+            }
+
+            const strength = evaluatePasswordStrength(password);
+            if (!strength.isValid) {
+                showAlert(alertMsg, 'Password must be at least 8 characters and include a number.', 'error');
+                return;
+            }
+
+            if (password !== confirm) {
+                showAlert(alertMsg, 'Passwords do not match.', 'error');
+                return;
+            }
+
+            if (isEmailTaken(email)) {
+                showAlert(alertMsg, 'This email address is already registered.', 'error');
+                return;
+            }
+
+            if (isPhoneTaken(phone)) {
+                showAlert(alertMsg, 'This phone number is already registered.', 'error');
+                return;
+            }
+
+            // ── Register ──────────────────────────────────────────────────
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+
+            try {
+                const hashed = await hashPassword(password);
+                registerUser(name, phone, email, hashed);
+
+                showAlert(alertMsg, `Account created! Welcome, ${name}. Redirecting to login...`, 'success');
+                signupForm.reset();
+                updateRequirements();
+
+                setTimeout(() => switchTab('login'), 2000);
+
+            } catch (err) {
+                showAlert(alertMsg, 'An unexpected error occurred. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            } finally {
+                // Re-enable after redirect timeout so it doesn't stay stuck if user navigates back
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                }, 2100);
+            }
+        });
+    }
+
+    // =========================================================================
+    // 3. DASHBOARD CONTROLLER (PROTECTED VIEW)
+    // =========================================================================
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         const session = getActiveSession();
 
-        // Redirect if session is missing
         if (!session) {
             window.location.replace('login.html');
             return;
         }
 
-        // Set User details
-        document.getElementById('session-username').textContent = session.username;
+        // Show user display name (name preferred, fall back to email)
+        const displayName = session.name || session.email || 'User';
+        document.getElementById('session-username').textContent = displayName;
 
-        // Set Profiles registered count stat
+        // Stats
         const registry = getUserRegistry();
-        document.getElementById('profile-count').textContent = `${registry.length} Profile${registry.length === 1 ? '' : 's'}`;
+        document.getElementById('profile-count').textContent =
+            `${registry.length} Profile${registry.length === 1 ? '' : 's'}`;
 
-        // Dynamic Logs timestamp updating
+        // Activity log timestamps
         const loginTime = session.loginTime;
         document.getElementById('log-time-1').textContent = loginTime;
-        
-        // Mock timestamps preceding current login
+
         const [hourStr, minStrPart] = loginTime.split(':');
         const [minStr, ampm] = minStrPart.split(' ');
         let h = parseInt(hourStr);
         let m = parseInt(minStr);
-        
-        const formatTime = (hour, min) => {
-            const padM = min.toString().padStart(2, '0');
-            return `${hour}:${padM} ${ampm}`;
-        };
 
-        // Subtract minutes to create a realistic log history leading up to login
+        const formatTime = (hour, min) => `${hour}:${min.toString().padStart(2, '0')} ${ampm}`;
+
         const m2 = (m - 1 + 60) % 60;
-        const h2 = m - 1 < 0 ? (h - 1 === 0 ? 12 : h - 1) : h;
+        const h2 = (m - 1 < 0) ? (h - 1 === 0 ? 12 : h - 1) : h;
         document.getElementById('log-time-2').textContent = formatTime(h2, m2);
 
         const m3 = (m - 2 + 60) % 60;
-        const h3 = m - 2 < 0 ? (h - 1 === 0 ? 12 : h - 1) : h;
+        const h3 = (m - 2 < 0) ? (h - 1 === 0 ? 12 : h - 1) : h;
         document.getElementById('log-time-3').textContent = formatTime(h3, m3);
 
-        // Logout Event
         logoutBtn.addEventListener('click', () => {
             clearSession();
             window.location.replace('login.html');
         });
     }
 
-    // Alert helper function
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
     function showAlert(element, text, type) {
         element.className = 'alert-message';
         if (type === 'hidden') {
@@ -212,5 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
             element.classList.add(type);
             element.textContent = text;
         }
+    }
+
+    function setReq(element, isOk) {
+        element.className = `req-item ${isOk ? 'valid' : 'invalid'}`;
+        element.querySelector('.bullet').textContent = isOk ? '✔' : '✖';
     }
 });
